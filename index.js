@@ -45,7 +45,7 @@ bot.on("callback_query", (callbackQuery) => {
 app.get("/", (req, res) => {
   res.send("server is working");
 });
-
-app.listen(8005, () => {
-  console.log("server is running at port 8005");
+const port = process.env.PORT || 8005;
+app.listen(port, () => {
+  console.log("server is running at port " + port);
 });
