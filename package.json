@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.2",
+    "mongoose": "^8.13.1",
     "node-telegram-bot-api": "^0.66.0",
     "npm": "^11.2.0"
   },
