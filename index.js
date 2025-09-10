@@ -1,4 +1,5 @@
 import express from "express";
+import chalk from "chalk";
 import mongoose from "mongoose";
 
 import createBot, {
@@ -7,24 +8,35 @@ import createBot, {
   handleBlockCommand,
 } from "./controllers/bot.controller.js";
 
+// Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
-    console.log("connected to mongodb");
+    console.log(chalk.green("✅ Connected to MongoDB"));
   })
   .catch((err) => {
-    console.log("error connecting to mongodb", err);
+    console.log(chalk.red("❌ Error connecting to MongoDB:"), err);
   });
 
 const app = express();
 
+// Initialize bot
 const bot = createBot(process.env.BOT_TOKEN);
 
-bot.onText(/\/start/, handleWelcomeMessage(bot));
+if (!bot) {
+  console.error(chalk.red("❌ Failed to initialize bot. Check BOT_TOKEN."));
+  process.exit(1);
+}
 
-bot.onText(/\/bomb (.+)/, handleBombCommand(bot));
-bot.onText(/\/block (.+)/, handleBlockCommand(bot));
+// Register bot commands
+bot.onText(/\/start/, (msg) => handleWelcomeMessage(bot, msg));
+bot.onText(/\/bomb (.+)/, (msg, match) => handleBombCommand(bot, msg, match));
+bot.onText(/\/block (.+)/, (msg, match) => handleBlockCommand(bot, msg, match));
 
+// Handle button callbacks
 bot.on("callback_query", (callbackQuery) => {
   const msg = callbackQuery.message;
   const data = callbackQuery.data;
@@ -42,10 +54,13 @@ bot.on("callback_query", (callbackQuery) => {
   }
 });
 
+// Express route
 app.get("/", (req, res) => {
-  res.send("server is working");
+  res.send("✅ Server is working");
 });
+
+// Start server
 const port = process.env.PORT || 8005;
 app.listen(port, () => {
-  console.log("server is running at port " + port);
+  console.log(chalk.blue(`🚀 Server is running at port ${port}`));
 });
